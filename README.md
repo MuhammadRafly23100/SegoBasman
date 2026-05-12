@@ -28,12 +28,8 @@ sego-basman/
 ├── apps/
 │   ├── backend/      # NestJS API + WebSocket gateway
 │   └── frontend/     # Next.js App Router
-├── docker-compose.yml
-├── CLAUDE.md         # Spesifikasi lengkap proyek
 └── README.md
 ```
-
-Detail lengkap struktur ada di [CLAUDE.md](CLAUDE.md).
 
 ---
 
