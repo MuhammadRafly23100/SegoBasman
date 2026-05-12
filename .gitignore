@@ -39,6 +39,9 @@ desktop.ini
 # Claude Code local settings (personal, jangan di-share)
 .claude/settings.local.json
 
+# Catatan dev personal (lokal saja)
+DEV.md
+
 # TypeScript
 *.tsbuildinfo
 next-env.d.ts
