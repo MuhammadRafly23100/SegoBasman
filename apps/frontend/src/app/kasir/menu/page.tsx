@@ -84,9 +84,16 @@ export default function KasirMenuPage() {
           <div className="bg-white rounded-xl border overflow-hidden">
             {items.map((menu: any) => (
               <div key={menu.id} className="flex items-center justify-between p-4 border-b last:border-b-0">
-                <div>
-                  <p className="font-semibold text-gray-900">{menu.nama}</p>
-                  <p className="text-sm text-red-600 font-medium">{formatRupiah(Number(menu.harga))}</p>
+                <div className="flex items-center gap-3">
+                  {menu.gambar ? (
+                    <img src={menu.gambar} alt={menu.nama} loading="lazy" className="h-14 w-14 rounded-lg object-cover bg-gray-100 flex-shrink-0" />
+                  ) : (
+                    <div className="h-14 w-14 rounded-lg bg-gray-100 flex items-center justify-center text-[10px] text-gray-300 flex-shrink-0">No img</div>
+                  )}
+                  <div>
+                    <p className="font-semibold text-gray-900">{menu.nama}</p>
+                    <p className="text-sm text-red-600 font-medium">{formatRupiah(Number(menu.harga))}</p>
+                  </div>
                 </div>
 
                 <button

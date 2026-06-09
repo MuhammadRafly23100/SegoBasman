@@ -56,7 +56,9 @@ model Menu {
   nama          String
   deskripsi     String?
   harga         Decimal          @db.Decimal(10, 2)
-  gambar        String?
+  gambar        String?          // URL eksternal opsional (fallback). Gambar utama disimpan di gambarData.
+  gambarData    Bytes?           // Byte mentah file gambar, disimpan langsung di DB
+  gambarMime    String?          // Tipe MIME gambar, mis. image/png, image/jpeg
   availability  MenuAvailability @default(TERSEDIA)
   kategoriId    String
   kategori      Kategori         @relation(fields: [kategoriId], references: [id])

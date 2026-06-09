@@ -176,31 +176,6 @@ export default function LoginPage() {
               )}
             </button>
           </form>
-
-          {/* Kotak Info Akun Demo */}
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.4 }}
-            className="mt-8 bg-blue-50/80 border border-blue-100 rounded-xl p-5 shadow-inner"
-          >
-            <div className="flex items-center gap-2 mb-3">
-              <div className="w-2 h-2 rounded-full bg-blue-500" />
-              <p className="font-bold text-sm text-blue-900">Akses Akun Demo</p>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="bg-white p-3 rounded-lg border border-blue-100 shadow-sm">
-                <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">Admin</p>
-                <p className="text-sm font-semibold text-gray-900">admin</p>
-                <p className="text-xs text-gray-500 font-mono mt-0.5">admin123</p>
-              </div>
-              <div className="bg-white p-3 rounded-lg border border-blue-100 shadow-sm">
-                <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">Kasir</p>
-                <p className="text-sm font-semibold text-gray-900">kasir</p>
-                <p className="text-xs text-gray-500 font-mono mt-0.5">kasir123</p>
-              </div>
-            </div>
-          </motion.div>
         </motion.div>
       </div>
     </div>

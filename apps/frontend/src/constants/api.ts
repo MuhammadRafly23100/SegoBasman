@@ -10,6 +10,7 @@ export const API_ENDPOINTS = {
     BASE: '/menu',
     BY_ID: (id: string) => `/menu/${id}`,
     AVAILABILITY: (id: string) => `/menu/${id}/availability`,
+    IMAGE: (id: string) => `/menu/${id}/gambar`,
   },
   KATEGORI: {
     BASE: '/kategori',
@@ -30,6 +31,7 @@ export const API_ENDPOINTS = {
   },
   REPORT: {
     SALES: '/report/sales',
+    SALES_PDF: '/report/sales/pdf',
   },
   USERS: {
     BASE: '/users',

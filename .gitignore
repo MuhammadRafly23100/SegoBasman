@@ -52,3 +52,7 @@ coverage/
 
 # Prisma (jangan ignore migrations!)
 # prisma/migrations boleh di-commit
+
+# Gambar menu sumber (besar, ~123MB). Disimpan lokal saja sebagai sumber seed
+# & cadangan asli. Gambar versi produksi sudah tersimpan di database (WebP).
+apps/frontend/public/menu/

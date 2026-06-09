@@ -1,0 +1,43 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Get-Process postgres -ErrorAction SilentlyContinue)",
+      "PowerShell(Test-NetConnection -ComputerName localhost -Port 5432 -InformationLevel Quiet)",
+      "PowerShell(\"=== Service PostgreSQL ===\")",
+      "PowerShell(\"=== Proses postgres jalan ===\")",
+      "PowerShell(\"=== Port 5432 terbuka? ===\")",
+      "PowerShell($svc = Get-CimInstance -ClassName Win32_Service -Filter \"Name='postgresql-x64-18'\"; \"PathName  : \" + $svc.PathName; \"StartName : \" + $svc.StartName; \"`n=== Data folder ===\"; $paths = @\\('C:\\\\Program Files\\\\PostgreSQL\\\\18\\\\data', 'D:\\\\PostgreSQL\\\\18\\\\data', 'C:\\\\PostgreSQL\\\\18\\\\data'\\); foreach \\($p in $paths\\) { if \\(Test-Path $p\\) { \"EXISTS: $p\"; Get-ChildItem $p -ErrorAction SilentlyContinue | Select-Object -First 5 Name, Mode } else { \"missing: $p\" } })",
+      "PowerShell(Get-ChildItem \"$env:USERPROFILE\\\\Desktop\\\\sego_basman_db.dump\", \"$env:USERPROFILE\\\\OneDrive\\\\Desktop\\\\sego_basman_db.dump\" -ErrorAction SilentlyContinue | Select-Object FullName, Length, LastWriteTime)",
+      "PowerShell($paths = @\\(\"$env:USERPROFILE\\\\Desktop\\\\sego_basman_db.dump\", \"$env:USERPROFILE\\\\OneDrive\\\\Desktop\\\\sego_basman_db.dump\"\\); foreach \\($p in $paths\\) { if \\(Test-Path $p\\) { \"FOUND: $p\"; \\(Get-Item $p\\) | Format-List FullName, Length, LastWriteTime } else { \"not here: $p\" } })",
+      "PowerShell(Test-NetConnection -ComputerName localhost -Port 3001 -InformationLevel Quiet)",
+      "PowerShell(Test-NetConnection -ComputerName localhost -Port 3000 -InformationLevel Quiet)",
+      "PowerShell(\"=== Backend port 3001 ===\")",
+      "PowerShell(\"=== Frontend port 3000 ===\")",
+      "PowerShell(\"=== PostgreSQL port 5432 ===\")",
+      "PowerShell(Start-Service postgresql-x64-18)",
+      "PowerShell(Get-Service postgresql-x64-18)",
+      "Bash(mkdir -p \"e:/PROJEKAN/segobasman/apps/frontend/public/menu\" && echo \"Folder dibuat: apps/frontend/public/menu/\")",
+      "Bash(explorer.exe \"e:\\\\PROJEKAN\\\\segobasman\\\\apps\\\\frontend\\\\public\\\\menu\")",
+      "PowerShell($pg = Test-NetConnection -ComputerName localhost -Port 5432 -InformationLevel Quiet; \"PostgreSQL 5432 up: $pg\"; if \\(-not $pg\\) { \"Mencoba start service...\"; try { Start-Service postgresql-x64-18 -ErrorAction Stop; \"started\" } catch { \"GAGAL start \\(butuh admin\\): $\\($_.Exception.Message\\)\" } })",
+      "Bash(cat)",
+      "Bash(PGPASSWORD=Rafly0852 \"/c/Program Files/PostgreSQL/18/bin/psql.exe\" -U postgres -h localhost -d sego_basman_db -f /tmp/check.sql)",
+      "Bash(ls tailwind.config.*)",
+      "Bash(cat tailwind.config.*)",
+      "Bash(npx tsc *)",
+      "Bash(echo \"EXIT: $?\")",
+      "Bash(node -p \"require\\('./node_modules/framer-motion/package.json'\\).version\")",
+      "Bash(echo \"framer-motion INSTALLED: $\\(node -p \"require\\('./node_modules/framer-motion/package.json'\\).version\" \\)\")",
+      "Bash(npx tailwindcss *)",
+      "Bash(git fetch *)",
+      "Bash(npm run *)",
+      "Bash(npx ts-node -e ' *)",
+      "Bash(npx ts-node *)",
+      "Bash(node -e \"const s=require\\('sharp'\\); console.log\\('typeof sharp:', typeof s\\); console.log\\('typeof s.default:', typeof s.default\\); console.log\\('version:', require\\('sharp/package.json'\\).version\\)\")",
+      "Bash(echo \"exit: $?\")",
+      "Bash(npx next *)"
+    ],
+    "additionalDirectories": [
+      "e:\\PROJEKAN\\segobasman\\apps\\frontend\\public"
+    ]
+  }
+}

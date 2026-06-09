@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import apiClient from '@/lib/axios';
 import { API_ENDPOINTS } from '@/constants/api';
 import toast from 'react-hot-toast';
-import { Plus, Minus, Trash2, Printer, ShoppingCart } from 'lucide-react';
+import { Plus, Minus, Trash2, Printer, ShoppingCart, X } from 'lucide-react';
 
 const formatRupiah = (amount: number) =>
   new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount);
@@ -21,6 +21,8 @@ export default function TransaksiPage() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [selectedKategori, setSelectedKategori] = useState<string>('all');
   const [receipt, setReceipt] = useState<any>(null);
+  // Mengontrol bottom sheet "Detail Pesanan" pada tablet (di desktop selalu tampil sebagai side panel)
+  const [panelOpen, setPanelOpen] = useState(true);
   const queryClient = useQueryClient();
 
   const { data: menus = [] } = useQuery({
@@ -51,6 +53,7 @@ export default function TransaksiPage() {
 
   const addToCart = (menu: any) => {
     if (menu.availability === 'HABIS') return;
+    setPanelOpen(true); // buka kembali bottom sheet di tablet saat menambah item
     setCart(prev => {
       const existing = prev.find(i => i.menuId === menu.id);
       if (existing) return prev.map(i => i.menuId === menu.id ? { ...i, quantity: i.quantity + 1 } : i);
@@ -118,48 +121,103 @@ export default function TransaksiPage() {
             ))}
           </div>
 
-          <div className="flex-1 overflow-auto p-4 grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 content-start pb-24">
-            {filteredMenus.map((menu: any) => {
-              const qtyInCart = cart.find(i => i.menuId === menu.id)?.quantity || 0;
-              return (
-                <button
-                  key={menu.id}
-                  onClick={() => addToCart(menu)}
-                  disabled={menu.availability === 'HABIS'}
-                  className={`relative p-5 rounded-2xl border-2 text-left transition-all duration-200 min-h-[120px] flex flex-col justify-between ${
-                    menu.availability === 'HABIS'
-                      ? 'border-gray-200 bg-gray-50 opacity-60 cursor-not-allowed'
-                      : qtyInCart > 0 
-                        ? 'border-red-500 bg-red-50/30 shadow-md ring-2 ring-red-500/20' 
-                        : 'border-gray-200 bg-white hover:border-red-300 hover:shadow active:scale-[0.98]'
-                  }`}
-                >
-                  {qtyInCart > 0 && (
-                    <div className="absolute -top-3 -right-3 bg-red-600 text-white w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm border-2 border-white shadow-sm z-10 animate-in zoom-in">
-                      {qtyInCart}
-                    </div>
-                  )}
-                  <p className="font-bold text-gray-900 text-base leading-tight pr-4">{menu.nama}</p>
-                  <div>
-                    <p className="text-red-700 font-extrabold mt-2 text-lg">{formatRupiah(Number(menu.harga))}</p>
-                    {menu.availability === 'HABIS' && (
-                      <span className="inline-block mt-1 text-xs bg-gray-200 text-gray-600 px-2 py-1 rounded-md font-bold">HABIS</span>
+          <div className="flex-1 overflow-auto p-4 pb-24">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {filteredMenus.map((menu: any) => {
+                const qtyInCart = cart.find(i => i.menuId === menu.id)?.quantity || 0;
+                return (
+                  <button
+                    key={menu.id}
+                    onClick={() => addToCart(menu)}
+                    disabled={menu.availability === 'HABIS'}
+                    className={`relative rounded-2xl border-2 text-left transition-all duration-200 overflow-hidden flex flex-col ${
+                      menu.availability === 'HABIS'
+                        ? 'border-gray-200 bg-gray-50 opacity-60 cursor-not-allowed'
+                        : qtyInCart > 0
+                          ? 'border-red-500 bg-red-50/30 shadow-md ring-2 ring-red-500/20'
+                          : 'border-gray-200 bg-white hover:border-red-300 hover:shadow active:scale-[0.98]'
+                    }`}
+                  >
+                    {qtyInCart > 0 && (
+                      <div className="absolute top-2 right-2 bg-red-600 text-white w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm border-2 border-white shadow-md z-10 animate-in zoom-in">
+                        {qtyInCart}
+                      </div>
                     )}
-                  </div>
-                </button>
-              );
-            })}
+                    {menu.gambar ? (
+                      <img
+                        src={menu.gambar}
+                        alt={menu.nama}
+                        loading="lazy"
+                        className="w-full h-40 shrink-0 object-cover bg-gray-100"
+                      />
+                    ) : (
+                      <div className="w-full h-40 shrink-0 bg-gray-100 flex items-center justify-center text-gray-300 text-xs">
+                        Tanpa Gambar
+                      </div>
+                    )}
+                    <div className="p-4 flex-1 flex flex-col justify-between min-h-[88px]">
+                      <p className="font-bold text-gray-900 text-base leading-tight pr-4">{menu.nama}</p>
+                      <div>
+                        <p className="text-red-700 font-extrabold mt-2 text-lg">{formatRupiah(Number(menu.harga))}</p>
+                        {menu.availability === 'HABIS' && (
+                          <span className="inline-block mt-1 text-xs bg-gray-200 text-gray-600 px-2 py-1 rounded-md font-bold">HABIS</span>
+                        )}
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
 
-        {/* Cart Panel - Muncul jika ada item di keranjang */}
+        {/* Cart Panel - Side panel (desktop) / Bottom sheet (tablet) */}
         {cart.length > 0 && (
-          <div className="w-[400px] bg-white border-l shadow-2xl flex flex-col z-10 animate-in slide-in-from-right duration-300">
-            <div className="p-5 border-b bg-gray-50">
+          <>
+            {/* Backdrop gelap di belakang bottom sheet - tablet/mobile saja */}
+            {panelOpen && (
+              <div
+                onClick={() => setPanelOpen(false)}
+                className="lg:hidden fixed inset-0 bg-black/40 z-40 transition-opacity duration-300"
+              />
+            )}
+
+            {/* Tombol mengambang untuk membuka kembali sheet - tablet/mobile saja */}
+            {!panelOpen && (
+              <button
+                onClick={() => setPanelOpen(true)}
+                className="lg:hidden fixed bottom-4 right-4 z-50 flex items-center gap-2 bg-red-600 text-white font-bold px-5 py-3 rounded-full shadow-xl shadow-red-300 active:scale-95 transition-transform"
+              >
+                <ShoppingCart className="h-5 w-5" />
+                <span>{cart.reduce((s, i) => s + i.quantity, 0)} item</span>
+              </button>
+            )}
+
+          <div
+            className={`bg-white shadow-2xl flex flex-col
+              fixed bottom-0 left-0 right-0 z-50 h-[50vh] w-full rounded-t-2xl
+              transition-transform duration-300 ease-out
+              ${panelOpen ? 'translate-y-0' : 'translate-y-full'}
+              lg:static lg:h-auto lg:w-[400px] lg:rounded-none lg:translate-y-0 lg:z-10 lg:border-l lg:transition-none`}
+          >
+            {/* Drag handle indikator - tablet/mobile saja */}
+            <div className="lg:hidden pt-3 pb-1 flex justify-center shrink-0">
+              <div className="w-12 h-1.5 rounded-full bg-gray-300" />
+            </div>
+
+            <div className="p-5 border-b bg-gray-50 shrink-0 relative">
               <div className="flex items-center gap-2 mb-4">
                 <ShoppingCart className="h-6 w-6 text-red-600" />
                 <h2 className="font-bold text-gray-900 text-lg">Detail Pesanan</h2>
               </div>
+              {/* Tombol tutup (X) - tablet/mobile saja */}
+              <button
+                onClick={() => setPanelOpen(false)}
+                aria-label="Tutup"
+                className="lg:hidden absolute top-4 right-4 p-2 rounded-full text-gray-500 hover:bg-gray-200 transition-colors"
+              >
+                <X className="h-5 w-5" />
+              </button>
               <input
                 value={namaPelanggan}
                 onChange={e => setNamaPelanggan(e.target.value)}
@@ -194,7 +252,7 @@ export default function TransaksiPage() {
               ))}
             </div>
 
-            <div className="p-6 border-t bg-gray-50">
+            <div className="p-6 border-t bg-gray-50 shrink-0">
               <div className="flex justify-between items-center mb-4">
                 <span className="font-bold text-gray-600 text-lg">Total Pembayaran</span>
                 <span className="font-black text-red-600 text-2xl">{formatRupiah(total)}</span>
@@ -208,6 +266,7 @@ export default function TransaksiPage() {
               </button>
             </div>
           </div>
+          </>
         )}
       </div>
     </div>

@@ -13,4 +13,7 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/prisma ./prisma
 COPY package*.json ./
 EXPOSE 3001
-CMD ["node", "dist/main"]
+
+# Jalankan migrasi database lalu start aplikasi.
+# Menggunakan node_modules/.bin/prisma (devDependency prisma ikut ter-copy dari builder).
+CMD ["sh", "-c", "node_modules/.bin/prisma migrate deploy && node dist/main.js"]

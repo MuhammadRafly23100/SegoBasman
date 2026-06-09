@@ -93,10 +93,17 @@ export default function AdminMenuPage() {
           <div className="bg-white rounded-xl border overflow-hidden">
             {items.map((menu: any) => (
               <div key={menu.id} className="flex items-center justify-between p-4 border-b last:border-b-0">
-                <div>
-                  <p className="font-semibold text-gray-900">{menu.nama}</p>
-                  <p className="text-sm text-red-600 font-medium">{formatRupiah(Number(menu.harga))}</p>
-                  {menu.deskripsi && <p className="text-xs text-gray-400 mt-0.5">{menu.deskripsi}</p>}
+                <div className="flex items-center gap-3">
+                  {menu.gambar ? (
+                    <img src={menu.gambar} alt={menu.nama} loading="lazy" className="h-14 w-14 rounded-lg object-cover bg-gray-100 flex-shrink-0" />
+                  ) : (
+                    <div className="h-14 w-14 rounded-lg bg-gray-100 flex items-center justify-center text-[10px] text-gray-300 flex-shrink-0">No img</div>
+                  )}
+                  <div>
+                    <p className="font-semibold text-gray-900">{menu.nama}</p>
+                    <p className="text-sm text-red-600 font-medium">{formatRupiah(Number(menu.harga))}</p>
+                    {menu.deskripsi && <p className="text-xs text-gray-400 mt-0.5">{menu.deskripsi}</p>}
+                  </div>
                 </div>
                 <div className="flex items-center gap-2">
                   <button
@@ -154,11 +161,39 @@ function MenuForm({ editData, kategoriList, onClose, onSuccess }: any) {
     harga: editData?.harga ? String(Number(editData.harga)) : '',
     kategoriId: editData?.kategoriId || '',
   });
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  // Preview: file yang baru dipilih, atau gambar lama dari server
+  const [preview, setPreview] = useState<string | null>(editData?.gambar || null);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      toast.error('File harus berupa gambar');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Ukuran gambar maksimal 5MB');
+      return;
+    }
+    setImageFile(file);
+    setPreview(URL.createObjectURL(file));
+  };
 
   const mutation = useMutation({
-    mutationFn: (data: any) => editData
-      ? apiClient.patch(API_ENDPOINTS.MENU.BY_ID(editData.id), data)
-      : apiClient.post(API_ENDPOINTS.MENU.BASE, data),
+    mutationFn: async (data: any) => {
+      // 1) Simpan data menu (create/update) untuk mendapatkan id
+      const res = editData
+        ? await apiClient.patch(API_ENDPOINTS.MENU.BY_ID(editData.id), data)
+        : await apiClient.post(API_ENDPOINTS.MENU.BASE, data);
+      // 2) Bila ada gambar baru, unggah byte-nya ke DB
+      if (imageFile) {
+        const fd = new FormData();
+        fd.append('file', imageFile);
+        await apiClient.post(API_ENDPOINTS.MENU.IMAGE(res.data.id), fd);
+      }
+      return res.data;
+    },
     onSuccess: () => {
       toast.success(editData ? 'Menu diperbarui' : 'Menu ditambahkan');
       onSuccess();
@@ -202,6 +237,22 @@ function MenuForm({ editData, kategoriList, onClose, onSuccess }: any) {
             <label className="block text-sm font-medium text-gray-700 mb-1">Deskripsi (opsional)</label>
             <textarea value={form.deskripsi} onChange={e => setForm(p => ({ ...p, deskripsi: e.target.value }))}
               className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-500" rows={2} />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Gambar (opsional, maks 5MB)</label>
+            <div className="flex items-center gap-3">
+              {preview ? (
+                <img src={preview} alt="Preview" className="h-16 w-16 rounded-lg object-cover bg-gray-100 flex-shrink-0 border" />
+              ) : (
+                <div className="h-16 w-16 rounded-lg bg-gray-100 flex items-center justify-center text-[10px] text-gray-300 flex-shrink-0 border">No img</div>
+              )}
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                className="block w-full text-sm text-gray-500 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-red-50 file:text-red-700 hover:file:bg-red-100"
+              />
+            </div>
           </div>
           <div className="flex gap-3 pt-2">
             <button type="button" onClick={onClose} className="flex-1 py-2.5 border border-gray-300 rounded-xl font-semibold hover:bg-gray-50">Batal</button>

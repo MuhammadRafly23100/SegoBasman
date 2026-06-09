@@ -10,6 +10,16 @@ import { REDIS_CLIENT } from './redis.decorator';
       provide: REDIS_CLIENT,
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => {
+        const url = configService.get<string>('REDIS_URL');
+
+        // Prioritas: jika REDIS_URL ada (mis. plugin Redis Railway), pakai itu.
+        if (url) {
+          // rediss:// (double-s) berarti koneksi TLS.
+          const useTls = url.startsWith('rediss://') || url.includes('upstash.io');
+          return new Redis(url, { tls: useTls ? {} : undefined });
+        }
+
+        // Fallback: variabel terpisah REDIS_HOST/PORT/PASSWORD (local dev).
         const host = configService.get('REDIS_HOST', 'localhost');
         const isUpstash = host.includes('upstash.io');
         return new Redis({

@@ -1,9 +1,10 @@
 'use client';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import toast from 'react-hot-toast';
 import apiClient from '@/lib/axios';
 import { API_ENDPOINTS } from '@/constants/api';
-import { BarChart2, TrendingUp, ShoppingBag, XCircle } from 'lucide-react';
+import { BarChart2, TrendingUp, ShoppingBag, XCircle, Download, Loader2 } from 'lucide-react';
 
 const formatRupiah = (amount: number) =>
   new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount);
@@ -11,11 +12,37 @@ const formatRupiah = (amount: number) =>
 export default function AdminLaporanPage() {
   const [period, setPeriod] = useState<'daily' | 'weekly' | 'monthly'>('daily');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [isDownloading, setIsDownloading] = useState(false);
 
   const { data: report, isLoading } = useQuery({
     queryKey: ['report', period, date],
     queryFn: () => apiClient.get(`${API_ENDPOINTS.REPORT.SALES}?period=${period}&date=${date}`).then(r => r.data),
   });
+
+  const handleDownloadPdf = async () => {
+    setIsDownloading(true);
+    try {
+      const res = await apiClient.get(API_ENDPOINTS.REPORT.SALES_PDF, {
+        params: { period, date },
+        responseType: 'blob',
+      });
+      const blob = new Blob([res.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      const periodLabel = period === 'weekly' ? 'mingguan' : period === 'monthly' ? 'bulanan' : 'harian';
+      link.href = url;
+      link.download = `laporan-${periodLabel}-${date.replace(/-/g, '')}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      toast.success('Laporan berhasil diunduh');
+    } catch (err) {
+      toast.error('Gagal mengunduh laporan');
+    } finally {
+      setIsDownloading(false);
+    }
+  };
 
   return (
     <div className="p-6">
@@ -40,6 +67,23 @@ export default function AdminLaporanPage() {
           onChange={e => setDate(e.target.value)}
           className="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
         />
+        <button
+          onClick={handleDownloadPdf}
+          disabled={isDownloading || isLoading || !report}
+          className="ml-auto inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold bg-red-600 text-white hover:bg-red-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+        >
+          {isDownloading ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Mengunduh...
+            </>
+          ) : (
+            <>
+              <Download className="h-4 w-4" />
+              Download PDF
+            </>
+          )}
+        </button>
       </div>
 
       {isLoading ? (

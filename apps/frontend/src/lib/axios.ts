@@ -17,6 +17,11 @@ apiClient.interceptors.request.use((config) => {
       } catch {}
     }
   }
+  // Untuk upload file (FormData), buang Content-Type default 'application/json'
+  // agar browser mengisinya sendiri dengan multipart/form-data + boundary yang benar.
+  if (typeof FormData !== 'undefined' && config.data instanceof FormData) {
+    delete config.headers['Content-Type'];
+  }
   return config;
 });
 
